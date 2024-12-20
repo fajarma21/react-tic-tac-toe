@@ -1,11 +1,12 @@
 import { useState } from "react";
 
+import { getTileType } from "@/helpers";
 import Tile from "@/components/Tile";
+import Marks from "@/components/Marks";
 import { checkLine, randomFirstTurn } from "./View.helpers";
 import { MAX_ALL_MARK, TILES } from "./View.constants";
 import * as css from "./View.styles";
 import { TileCoordinate, TileData } from "./View.types";
-import { getTileType } from "@/helpers";
 
 function App() {
   const [firstTurn, setFirstTurn] = useState(randomFirstTurn());
@@ -49,7 +50,10 @@ function App() {
     <div className={css.container}>
       <h1 className={css.title}>Tic-Tac-Toe</h1>
       <div className={css.turnContainer}>
-        {player} {isFinished ? "win" : "turn"}
+        <div className={css.playerBadge}>
+          <Marks type={player} />
+        </div>{" "}
+        {isFinished ? "win" : "turn"}
       </div>
       <div className={css.grid}>
         {[...Array(TILES)].map((_, row) => (
@@ -94,14 +98,14 @@ function App() {
         <div className={css.history}>
           {historyList.length ? (
             <ul>
+              {isFinished && (
+                <li>{`${player} win in ${historyList.length} turns`}</li>
+              )}
               {historyList.map((item, index) => {
                 const turnItem = getTileType(item.type);
                 return (
                   <li key={`history-${index}`}>
                     {turnItem} turn: ({item.x}, {item.y})
-                    {index === 0 &&
-                      isFinished &&
-                      ` - ${turnItem} win in ${historyList.length} turns`}
                   </li>
                 );
               })}

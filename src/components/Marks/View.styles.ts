@@ -1,6 +1,7 @@
 import { css, keyframes } from "@emotion/css";
 
 const timingFunction = "cubic-bezier(0, 0, 0, 1.5)";
+const width = `var(--width, 8px)`;
 
 const circleShow = keyframes`
   from {
@@ -13,19 +14,19 @@ const circleShow = keyframes`
 
 const xBeforeShow = keyframes`
   from {
-    transform: scale(0) rotate(0);;
+    transform: scaleY(0) rotate(0);;
   }
   to {
-    transform: scale(1) rotate(45deg);;
+    transform: scaleY(1) rotate(45deg);;
   }
 `;
 
 const xAfterShow = keyframes`
   from {
-    transform: scale(0) rotate(0);;
+    transform: scaleY(0) rotate(0);;
   }
   to {
-    transform: scale(1) rotate(-45deg);;
+    transform: scaleY(1) rotate(-45deg);;
   }
 `;
 
@@ -51,7 +52,7 @@ export const xMark = css`
     position: absolute;
     display: block;
     height: 90%;
-    width: 8px;
+    width: ${width};
     border-radius: 4px;
     background-color: crimson;
   }
@@ -72,7 +73,7 @@ export const oMark = css`
     width: 60%;
     height: 60%;
     border-radius: 50%;
-    border: 8px solid mediumseagreen;
+    border: ${width} solid mediumseagreen;
     animation: ${circleShow} 250ms ${timingFunction} 1 forwards;
   }
 `;

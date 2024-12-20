@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
 import { getTileType } from "@/helpers";
-import Marks from "./components/Marks";
+import Marks from "../Marks";
 import * as css from "./View.styles";
 import type { TileProps } from "./View.types";
 

@@ -24,9 +24,23 @@ export const title = css`
 
 export const turnContainer = css`
   ${transparentBg};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
   color: #4b4b4b;
   text-align: center;
   margin-bottom: 10px;
+`;
+
+export const playerBadge = css`
+  --width: 2px;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-color: white;
 `;
 
 export const grid = css`
@@ -75,7 +89,7 @@ export const historyContainer = css`
 
 export const history = css`
   overflow: auto;
-  max-height: 100px;
+  height: 100px;
   padding: 8px 12px;
   ${transparentBg};
 
