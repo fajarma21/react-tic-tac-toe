@@ -9,8 +9,7 @@ import * as css from "./View.styles";
 import { TileCoordinate, TileData } from "./View.types";
 
 function App() {
-  const [firstTurn, setFirstTurn] = useState(randomFirstTurn());
-  const [turn, setTurn] = useState(firstTurn);
+  const [turn, setTurn] = useState(randomFirstTurn());
   const [historyList, setHistoryList] = useState<TileData[]>([]);
   const [line, setLine] = useState<TileData[]>([]);
 
@@ -40,7 +39,6 @@ function App() {
 
   const handleReset = () => {
     const firstTurn = randomFirstTurn();
-    setFirstTurn(firstTurn);
     setTurn(firstTurn);
     setHistoryList([]);
     setLine([]);
@@ -85,16 +83,7 @@ function App() {
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        disabled={!isFinished}
-        className={css.btn}
-        onClick={handleReset}
-      >
-        Reset
-      </button>
       <div className={css.historyContainer}>
-        <h3>History</h3>
         <div className={css.history}>
           {historyList.length ? (
             <ul>
@@ -111,9 +100,17 @@ function App() {
               })}
             </ul>
           ) : (
-            "No history"
+            "Play and create history!"
           )}
         </div>
+        <button
+          type="button"
+          disabled={!isFinished}
+          className={css.btn}
+          onClick={handleReset}
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

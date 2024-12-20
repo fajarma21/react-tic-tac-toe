@@ -1,11 +1,6 @@
 import { css } from "@emotion/css";
 import { grayBorder } from "@/constants/colors";
 
-const transparentBg = css`
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-`;
-
 export const container = css`
   text-align: center;
   width: 348px;
@@ -23,7 +18,6 @@ export const title = css`
 `;
 
 export const turnContainer = css`
-  ${transparentBg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,15 +26,16 @@ export const turnContainer = css`
   color: #4b4b4b;
   text-align: center;
   margin-bottom: 10px;
+  border-radius: 8px;
+  background-color: wheat;
 `;
 
 export const playerBadge = css`
   --width: 2px;
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
-  background-color: white;
 `;
 
 export const grid = css`
@@ -59,11 +54,11 @@ export const row = css`
 export const btn = css`
   all: unset;
   cursor: pointer;
-  width: 100%;
-  height: 50px;
   color: white;
   font-weight: bold;
-  margin-top: 20px;
+  text-align: center;
+  flex: none;
+  width: 40%;
   border-bottom: 6px solid #d65000;
   border-radius: 8px;
   background-color: #ff9f0e;
@@ -78,20 +73,22 @@ export const btn = css`
 `;
 
 export const historyContainer = css`
-  text-align: left;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
   margin-top: 10px;
-  color: #4b4b4b;
-
-  h3 {
-    margin: 0 0 4px;
-  }
 `;
 
 export const history = css`
   overflow: auto;
+  text-align: left;
   height: 100px;
+  width: 100%;
   padding: 8px 12px;
-  ${transparentBg};
+  color: #4b4b4b;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
 
   ul {
     margin: 0;
