@@ -57,14 +57,16 @@ const getNeighbors = ({ checkList, current, lineType }: GetNeighborsParams) => {
       }
     } else if (
       isTop ||
-      isBottom ||
-      isLeft ||
+      isTopRight ||
       isRight ||
-      isTopLeft ||
       isBottomRight ||
       isBottom ||
-      isBottomLeft
+      isBottomLeft ||
+      isBottom ||
+      isLeft ||
+      isTopLeft
     ) {
+      console.log("here");
       let newLineType = 0;
       if (isTop || isBottom) newLineType = 1;
       else if (isLeft || isRight) newLineType = 2;
