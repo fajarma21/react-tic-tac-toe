@@ -1,119 +1,219 @@
-import { useState } from "react";
-
-import { getTileType } from "@/helpers";
-import Tile from "@/components/Tile";
+import { useCallback, useEffect, useRef, useState } from "react";
+import WebsocketClient from "@/helpers/websocketClient";
+import JsonParse from "@/helpers/JsonParse";
+import SocketProvider from "@/contexts/socket";
+import MainProvider from "@/contexts/main";
 import Marks from "@/components/Marks";
-import { checkLine, randomFirstTurn } from "./View.helpers";
-import { MAX_ALL_MARK, TILES } from "./View.constants";
-import * as css from "./View.styles";
-import { TileCoordinate, TileData } from "./View.types";
+import {
+  GAME_CLOSE,
+  GAME_CREATE_ROOM,
+  GAME_INIT,
+  GAME_JOIN_ROOM,
+  GAME_MARKING,
+  GAME_NEXT_TURN,
+  GAME_READY,
+  GAME_WIN,
+  STATUS_ALL_JOIN,
+  STATUS_ALL_READY,
+  STATUS_BREAK,
+  STATUS_WAIT_JOIN,
+  STATUS_WAIT_READY,
+} from "@/constants";
+import {
+  handleSendToWSParams,
+  GetWSMessageParams,
+  RoomData,
+  TileData,
+  TTTWebSocket,
+} from "@/types";
 
-function App() {
-  const [turn, setTurn] = useState(randomFirstTurn());
+import Game from "../Game";
+import Home from "../Home";
+import * as css from "./View.styles";
+import { RoomReadyValue, RoomWinValue } from "./View.types";
+import getTileType from "@/helpers/getTileType";
+
+const App = () => {
+  const wsClient = useRef<TTTWebSocket | null>(null);
+  const userId = useRef(0);
+  const roomId = useRef(0);
+
+  const [roomList, setRoomList] = useState<RoomData[]>([]);
+
+  const [gameStatus, setGameStatus] = useState(0);
+  const [turn, setTurn] = useState(0);
+  const [mark, setMark] = useState(0);
   const [historyList, setHistoryList] = useState<TileData[]>([]);
   const [line, setLine] = useState<TileData[]>([]);
+  const [statusText, setStatusText] = useState("");
 
-  const player = getTileType(turn);
-  const isFinished = line.length === 3;
-
-  const showedHistory =
-    historyList.length > MAX_ALL_MARK
-      ? historyList.slice(0, MAX_ALL_MARK)
-      : historyList;
-
-  const handleClick = (value: TileCoordinate) => {
-    const { x, y } = value;
-    if (!showedHistory.find((item) => item.x === x && item.y === y)) {
-      setHistoryList((prev) => [{ x, y, type: turn }, ...prev]);
-
-      const resultLine = checkLine({
-        historyList: showedHistory,
-        data: { ...value, type: turn },
-      });
-
-      if (resultLine.length) {
-        setLine(resultLine);
-      } else setTurn((prev) => prev + 1);
+  const resetGame = () => {
+    if (setHistoryList.length) {
+      setMark(0);
+      setTurn(0);
+      setHistoryList([]);
+      setLine([]);
     }
   };
 
-  const handleReset = () => {
-    const firstTurn = randomFirstTurn();
-    setTurn(firstTurn);
-    setHistoryList([]);
-    setLine([]);
-  };
+  const handleGetMessage = useCallback(
+    ({ type, room, roomStatus, user, value }: GetWSMessageParams) => {
+      switch (type) {
+        case GAME_INIT:
+          userId.current = user;
+          break;
+        case GAME_CREATE_ROOM:
+          if (user === userId.current) {
+            if (!roomId.current) {
+              roomId.current = room;
+            }
+
+            resetGame();
+
+            setStatusText("Waiting for opponent to join...");
+            setGameStatus(STATUS_WAIT_JOIN);
+          }
+          break;
+        case GAME_JOIN_ROOM:
+          if (user === userId.current) {
+            roomId.current = room;
+            setStatusText("The opponent has been waiting for you");
+          }
+          if (room === roomId.current) {
+            if (user !== userId.current) {
+              setStatusText("The opponent has joined the room");
+            }
+            setGameStatus(STATUS_ALL_JOIN);
+          }
+          break;
+        case GAME_READY:
+          if (roomStatus === STATUS_WAIT_READY) {
+            if (room === roomId.current) {
+              if (user === userId.current) {
+                setStatusText("Waiting for opponent to be ready");
+                setGameStatus(roomStatus);
+              } else {
+                setStatusText("The opponent is ready! Hit that button!");
+              }
+
+              resetGame();
+            }
+          }
+          if (roomStatus === STATUS_ALL_READY) {
+            if (room === roomId.current) {
+              resetGame();
+
+              const { firstTurn, marks } = JsonParse<RoomReadyValue>(value);
+              const marksData = marks.find(
+                (item) => item.id === userId.current
+              );
+              if (marksData) setMark(marksData.mark);
+
+              setTurn(firstTurn);
+              setStatusText("Good luck have fun!");
+              setGameStatus(roomStatus);
+            }
+          }
+          break;
+        case GAME_MARKING:
+          if (room === roomId.current) {
+            const parsedData = JsonParse<TileData>(value);
+            setStatusText("");
+            setHistoryList((prev) => [parsedData, ...prev]);
+          }
+          break;
+        case GAME_NEXT_TURN:
+          if (room === roomId.current) setTurn((prev) => prev + 1);
+          break;
+        case GAME_WIN:
+          if (room === roomId.current) {
+            const { resultLine } = JsonParse<RoomWinValue>(value);
+            setGameStatus(roomStatus);
+            setLine(resultLine);
+          }
+          break;
+        case GAME_CLOSE:
+          if (room === roomId.current) {
+            let text = "room";
+            if (roomStatus === STATUS_BREAK) text = "match";
+            setStatusText(`The Opponent has left the ${text}`);
+            setGameStatus(roomStatus);
+          }
+          break;
+
+        default:
+          break;
+      }
+
+      setRoomList(JsonParse(value));
+    },
+    []
+  );
+
+  const handleSendToWS = useCallback(
+    ({ type, value }: handleSendToWSParams) => {
+      if (wsClient.current && userId.current) {
+        const stringValue = value ? JSON.stringify(value) : "{}";
+        wsClient.current.sendMessage({
+          type: type,
+          user: userId.current,
+          value: stringValue,
+        });
+      }
+    },
+    []
+  );
+
+  const handleCloseWS = useCallback(() => {
+    if (roomId.current)
+      handleSendToWS({ type: GAME_CLOSE, value: { roomId: roomId.current } });
+  }, [handleSendToWS]);
+
+  useEffect(() => {
+    if (!wsClient.current) {
+      wsClient.current = new WebsocketClient({
+        url: "ws://localhost:8000",
+        onOpen: () => console.log("open"),
+        onClose: () => console.log("close"),
+        onGetMessage: handleGetMessage,
+      });
+    }
+  }, [handleGetMessage]);
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", handleCloseWS);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleCloseWS);
+    };
+  }, [handleCloseWS]);
 
   return (
     <div className={css.container}>
-      <h1 className={css.title}>Tic-Tac-Toe</h1>
-      <div className={css.turnContainer}>
-        <div className={css.playerBadge}>
-          <Marks type={player} />
-        </div>{" "}
-        {isFinished ? "win" : "turn"}
+      <div className={css.playerBadges}>
+        {Boolean(mark) && <Marks type={getTileType(mark)} />}
+        <Marks grayscale type="o" />
+        <Marks grayscale type="x" />
       </div>
-      <div className={css.grid}>
-        {[...Array(TILES)].map((_, row) => (
-          <div className={css.row} key={`row-${row}`}>
-            {[...Array(TILES)].map((_, col) => {
-              const { type } =
-                showedHistory.find(
-                  (item) => item.x === col && item.y === row
-                ) || {};
-              const oldTile = showedHistory[showedHistory.length - 1];
-              const isLast =
-                !isFinished &&
-                showedHistory.length >= MAX_ALL_MARK &&
-                oldTile.x === col &&
-                oldTile.y === row;
-              return (
-                <Tile
-                  key={`tile-${row}${col}`}
-                  isBright={line.some(
-                    (item) => item.x === col && item.y === row
-                  )}
-                  isDisabled={isFinished}
-                  isLast={isLast}
-                  type={type}
-                  onClick={() => handleClick({ x: col, y: row })}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      <div className={css.historyContainer}>
-        <div className={css.history}>
-          {historyList.length ? (
-            <ul>
-              {isFinished && (
-                <li>{`${player} win in ${historyList.length} turns`}</li>
-              )}
-              {historyList.map((item, index) => {
-                const turnItem = getTileType(item.type);
-                return (
-                  <li key={`history-${index}`}>
-                    {turnItem} turn: ({item.x}, {item.y})
-                  </li>
-                );
-              })}
-            </ul>
+      <MainProvider
+        gameStatus={gameStatus}
+        historyList={historyList}
+        mark={mark}
+        line={line}
+        roomId={roomId.current}
+        turn={turn}
+        userId={userId.current}
+      >
+        <SocketProvider onSendToWS={handleSendToWS}>
+          {roomId.current ? (
+            <Game statusText={statusText} />
           ) : (
-            "Play and create history!"
+            <Home rooms={roomList} />
           )}
-        </div>
-        <button
-          type="button"
-          disabled={!isFinished}
-          className={css.btn}
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-      </div>
+        </SocketProvider>
+      </MainProvider>
     </div>
   );
-}
+};
 
 export default App;

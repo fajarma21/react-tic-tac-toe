@@ -1,23 +1,15 @@
-export interface TileCoordinate {
-  x: number;
-  y: number;
+import { TileData } from "@/types";
+
+interface Mark {
+  id: number;
+  mark: number;
 }
 
-export interface TileData extends TileCoordinate {
-  type: number;
+export interface RoomReadyValue {
+  firstTurn: number;
+  marks: Mark[];
 }
 
-export interface CheckLineParams {
-  historyList: TileData[];
-  data: TileData;
-}
-
-export interface TileNeighborData extends TileData {
-  lineType: number;
-}
-
-export interface GetNeighborsParams {
-  checkList: TileData[];
-  current: TileData;
-  lineType?: number;
+export interface RoomWinValue {
+  resultLine: TileData[];
 }

@@ -1,8 +1,8 @@
+import { TileData } from "@/types";
 import { TILES } from "./View.constants";
 import {
   CheckLineParams,
   GetNeighborsParams,
-  TileData,
   TileNeighborData,
 } from "./View.types";
 
@@ -66,7 +66,6 @@ const getNeighbors = ({ checkList, current, lineType }: GetNeighborsParams) => {
       isLeft ||
       isTopLeft
     ) {
-      console.log("here");
       let newLineType = 0;
       if (isTop || isBottom) newLineType = 1;
       else if (isLeft || isRight) newLineType = 2;

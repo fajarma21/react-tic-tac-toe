@@ -1,1 +1,1 @@
-export const grayBorder = "#c8c8c8";
+export const grayBorder = "#c7c7c7";
