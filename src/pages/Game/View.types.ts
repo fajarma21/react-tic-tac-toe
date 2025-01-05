@@ -1,7 +1,8 @@
 import { TileData } from "@/types";
 
 export interface GameProps {
-  statusText: string;
+  turn: number;
+  onChangeTurn: (value: number) => void;
 }
 
 export interface CheckLineParams {

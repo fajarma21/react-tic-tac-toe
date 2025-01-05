@@ -1,4 +1,4 @@
-import { grayBorder } from "@/constants/colors";
+import { grayBorder } from "@/constants/styles";
 import { css } from "@emotion/css";
 
 export const btn = css`

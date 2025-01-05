@@ -21,6 +21,7 @@ a:hover {
 body {
   margin: 0;
   color: #4b4b4b;
+  background-image: url(./assets/xox.png);
 }
 
 body * {

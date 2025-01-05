@@ -1,7 +1,5 @@
 import { css, keyframes } from "@emotion/css";
-import { grayBorder } from "@/constants/colors";
-
-const timingFunction = "cubic-bezier(0, 0, 0, 1.5)";
+import { bounce, grayBorder } from "@/constants/styles";
 
 const horizontal = keyframes`
   from {
@@ -19,25 +17,6 @@ const vertical = keyframes`
   to {
     transform: scaleY(1);
   }
-`;
-
-export const turnContainer = css`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  padding: 4px 12px;
-  text-align: center;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  background-color: wheat;
-`;
-
-export const playerBadge = css`
-  --width: 2px;
-  position: relative;
-  width: 18px;
-  height: 18px;
 `;
 
 export const gridWrapper = css`
@@ -82,7 +61,7 @@ export const verticalLine = css`
   left: 100px;
   width: 100px;
   height: 90%;
-  animation: ${horizontal} 250ms ${timingFunction} forwards;
+  animation: ${horizontal} 250ms ${bounce} forwards;
   ::after,
   ::before {
     width: 2px;
@@ -103,7 +82,7 @@ export const horizontalLine = css`
   top: 100px;
   height: 100px;
   width: 90%;
-  animation: ${vertical} 250ms ${timingFunction} forwards;
+  animation: ${vertical} 250ms ${bounce} forwards;
   ::after,
   ::before {
     content: "";
@@ -117,12 +96,6 @@ export const horizontalLine = css`
   ::after {
     bottom: -1px;
   }
-`;
-
-export const statusText = css`
-  margin: 0 0 8px;
-  text-align: center;
-  white-space: nowrap;
 `;
 
 export const history = css`

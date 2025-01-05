@@ -1,6 +1,6 @@
 import { css, keyframes } from "@emotion/css";
+import { bounce } from "@/constants/styles";
 
-const timingFunction = "cubic-bezier(0, 0, 0, 1.5)";
 const width = `var(--width, 8px)`;
 
 const circleShow = keyframes`
@@ -41,7 +41,7 @@ const mark = css`
   opacity: var(--last);
   transform: scale(var(--last));
   will-change: opacity, transform;
-  transition: all 250ms ${timingFunction};
+  transition: all 250ms ${bounce};
 `;
 
 export const xMark = css`
@@ -59,11 +59,11 @@ export const xMark = css`
   }
 
   &::before {
-    animation: ${xBeforeShow} 250ms ${timingFunction} forwards;
+    animation: ${xBeforeShow} 250ms ${bounce} forwards;
   }
 
   &::after {
-    animation: ${xAfterShow} 250ms ${timingFunction} forwards;
+    animation: ${xAfterShow} 250ms ${bounce} forwards;
   }
 `;
 
@@ -75,6 +75,6 @@ export const oMark = css`
     height: 60%;
     border-radius: 50%;
     border: ${width} solid var(--color, mediumseagreen);
-    animation: ${circleShow} 250ms ${timingFunction} 1 forwards;
+    animation: ${circleShow} 250ms ${bounce} 1 forwards;
   }
 `;

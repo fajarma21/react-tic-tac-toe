@@ -6,8 +6,6 @@ import {
   TileNeighborData,
 } from "./View.types";
 
-export const randomFirstTurn = () => Math.ceil(Math.random() * 2);
-
 const getTurnType = (turn: number) => {
   return turn % 2;
 };
