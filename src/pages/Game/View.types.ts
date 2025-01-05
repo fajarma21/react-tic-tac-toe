@@ -1,10 +1,8 @@
-export interface TileCoordinate {
-  x: number;
-  y: number;
-}
+import { TileData } from "@/types";
 
-export interface TileData extends TileCoordinate {
-  type: number;
+export interface GameProps {
+  turn: number;
+  onChangeTurn: (value: number) => void;
 }
 
 export interface CheckLineParams {
