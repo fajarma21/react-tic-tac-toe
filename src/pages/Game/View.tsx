@@ -1,22 +1,34 @@
-import { useState } from "react";
-
-import getRandomTurn from "@/helpers/getRandomTurn";
+import Marks from "@/components/Marks";
 import Template from "@/components/Template";
 import Tile from "@/components/Tile";
-import { TileCoordinate, TileData } from "@/types";
+import {
+  GAME_MARKING,
+  GAME_NEXT_TURN,
+  GAME_READY,
+  GAME_REMATCH,
+  GAME_WIN,
+  STATUS_FINISH,
+} from "@/constants";
+import { useMainContext } from "@/contexts/main/index.hook";
+import { useSocketContext } from "@/contexts/socket/index.hook";
+import getTileType from "@/helpers/getTileType";
+import { TileCoordinate } from "@/types";
 
 import History from "./components/History";
 import Overlay from "./components/Overlay";
 import { checkLine } from "./View.helpers";
-import { MAX_ALL_MARK, TILES } from "./View.constants";
+import { MAX_ALL_MARK, SHOW_OVERLAY, TILES } from "./View.constants";
 import * as css from "./View.styles";
-import { GameProps } from "./View.types";
 
-const Game = ({ turn, onChangeTurn }: GameProps) => {
-  const [historyList, setHistoryList] = useState<TileData[]>([]);
-  const [line, setLine] = useState<TileData[]>([]);
+const Game = () => {
+  const { handleSendToWS } = useSocketContext();
+  const { gameStatus, historyList, line, mark, turn, roomId } =
+    useMainContext();
 
-  const isFinished = line.length === 3;
+  const isBegin = Boolean(turn);
+  const isFinished = gameStatus === STATUS_FINISH;
+  const currentTurn = getTileType(turn);
+  const isPlayerTurn = currentTurn === getTileType(mark);
 
   const showedHistory =
     historyList.length > MAX_ALL_MARK
@@ -25,8 +37,16 @@ const Game = ({ turn, onChangeTurn }: GameProps) => {
 
   const handleClick = (value: TileCoordinate) => {
     const { x, y } = value;
-    if (!showedHistory.find((item) => item.x === x && item.y === y)) {
-      setHistoryList((prev) => [{ x, y, type: turn }, ...prev]);
+    if (
+      !showedHistory.find((item) => item.x === x && item.y === y) &&
+      isBegin &&
+      isPlayerTurn
+    ) {
+      const completeValue = { ...value, type: turn };
+      handleSendToWS({
+        type: GAME_MARKING,
+        value: { ...completeValue, roomId },
+      });
 
       const resultLine = checkLine({
         historyList: showedHistory,
@@ -34,20 +54,34 @@ const Game = ({ turn, onChangeTurn }: GameProps) => {
       });
 
       if (resultLine.length) {
-        setLine(resultLine);
-      } else onChangeTurn(turn + 1);
+        handleSendToWS({ type: GAME_WIN, value: { roomId, resultLine } });
+      } else handleSendToWS({ type: GAME_NEXT_TURN, value: { roomId } });
     }
   };
 
-  const handleReset = () => {
-    onChangeTurn(getRandomTurn());
-    setHistoryList([]);
-    setLine([]);
+  const handleStart = () => {
+    handleSendToWS({ type: GAME_READY, value: { roomId } });
+  };
+
+  const handleFindMatch = () => {
+    handleSendToWS({ type: GAME_REMATCH, value: { roomId } });
   };
 
   return (
     <Template>
-      <div className={css.rowCenter}>Good luck, have fun!</div>
+      <>
+        <div>
+          <b>Room</b> {roomId}
+        </div>
+        {isBegin && (
+          <div className={css.rowCenter}>
+            <b>Turn</b>
+            <div className={css.playerBadge}>
+              <Marks type={currentTurn} />
+            </div>
+          </div>
+        )}
+      </>
       <>
         <div className={css.grid}>
           {[...Array(TILES)].map((_, row) => (
@@ -69,7 +103,7 @@ const Game = ({ turn, onChangeTurn }: GameProps) => {
                     isBright={line.some(
                       (item) => item.x === col && item.y === row
                     )}
-                    isDisabled={isFinished}
+                    isDisabled={!isPlayerTurn || isFinished}
                     isLast={isLast}
                     player={turn}
                     type={type}
@@ -80,11 +114,23 @@ const Game = ({ turn, onChangeTurn }: GameProps) => {
             </div>
           ))}
         </div>
-        <div className={css.verticalLine} />
-        <div className={css.horizontalLine} />
-        {isFinished && <Overlay onClickStart={handleReset} />}
+        {isBegin && (
+          <>
+            <div className={css.verticalLine} />
+            <div className={css.horizontalLine} />
+          </>
+        )}
+
+        {SHOW_OVERLAY.includes(gameStatus) && (
+          <Overlay
+            isPlayerTurn={isPlayerTurn}
+            gameStatus={gameStatus}
+            onClickFindMatch={handleFindMatch}
+            onClickStart={handleStart}
+          />
+        )}
       </>
-      <History historyList={historyList} isFinished={isFinished} turn={turn} />
+      <History />
     </Template>
   );
 };

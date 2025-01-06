@@ -1,6 +1,12 @@
 import { css } from "@emotion/css";
 import { grayBorder } from "@/constants/styles";
 
+export const statusText = css`
+  margin: 0 0 8px;
+  text-align: center;
+  white-space: nowrap;
+`;
+
 export const history = css`
   overflow: auto;
   text-align: left;

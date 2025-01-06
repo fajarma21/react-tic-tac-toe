@@ -7,6 +7,7 @@ const Marks = ({ grayscale, type }: MarksProps) => {
     "--color": grayscale ? "#e4e4e4" : undefined,
     zIndex: Number(!grayscale),
   } as CSSProperties;
+
   return <div className={css[`${type}Mark`]} style={style} />;
 };
 

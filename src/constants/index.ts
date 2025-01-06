@@ -1,0 +1,19 @@
+export const GAME_INIT = 1;
+export const GAME_CREATE_ROOM = 2;
+export const GAME_JOIN_ROOM = 3;
+export const GAME_READY = 4;
+export const GAME_MARKING = 5;
+export const GAME_NEXT_TURN = 6;
+export const GAME_WIN = 7;
+export const GAME_REMATCH = 8;
+export const GAME_CLOSE = 99;
+
+export const STATUS_WAIT_JOIN = 1;
+export const STATUS_ALL_JOIN = 2;
+export const STATUS_WAIT_READY = 3;
+export const STATUS_ALL_READY = 4;
+export const STATUS_BREAK = 5;
+export const STATUS_FINISH = 6;
+export const STATUS_FINISH_BREAK = 7;
+export const STATUS_WAIT = [STATUS_WAIT_JOIN, STATUS_WAIT_READY];
+export const STATUS_END = [STATUS_BREAK, STATUS_FINISH_BREAK, STATUS_FINISH];

@@ -1,10 +1,5 @@
 import { TileData } from "@/types";
 
-export interface GameProps {
-  turn: number;
-  onChangeTurn: (value: number) => void;
-}
-
 export interface CheckLineParams {
   historyList: TileData[];
   data: TileData;

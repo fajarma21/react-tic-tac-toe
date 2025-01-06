@@ -19,6 +19,13 @@ const vertical = keyframes`
   }
 `;
 
+export const playerBadge = css`
+  --width: 2px;
+  position: relative;
+  width: 18px;
+  height: 18px;
+`;
+
 export const gridWrapper = css`
   position: relative;
   height: 301px;
