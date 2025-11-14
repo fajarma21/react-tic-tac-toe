@@ -1,4 +1,8 @@
-import { TileData } from "@/types";
+import { TileData } from '@/types';
+
+export interface RoomWaitValue {
+  winnerId?: number;
+}
 
 export interface RoomReadyValue {
   firstTurn: number;
@@ -10,4 +14,5 @@ export interface RoomReadyValue {
 
 export interface RoomWinValue {
   resultLine: TileData[];
+  winnerId: number;
 }

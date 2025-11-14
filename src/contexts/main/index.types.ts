@@ -1,5 +1,5 @@
-import { TileData } from "@/types";
-import type { ReactNode } from "react";
+import { TileData } from '@/types';
+import type { ReactNode } from 'react';
 
 export interface MainContextValue {
   gameStatus: number;
@@ -10,6 +10,7 @@ export interface MainContextValue {
   statusText: string;
   turn: number;
   userId: number;
+  winner: number;
 }
 
 export interface MainProviderProps extends MainContextValue {

@@ -1,18 +1,19 @@
-import Button from "@/components/Button";
+import Button from '@/components/Button';
 import {
   STATUS_ALL_JOIN,
   STATUS_BREAK,
   STATUS_END,
   STATUS_FINISH_BREAK,
   STATUS_WAIT,
-} from "@/constants";
+} from '@/constants';
 
-import * as css from "./View.styles";
-import { OverlayProps } from "./View.types";
+import * as css from './View.styles';
+import { OverlayProps } from './View.types';
 
 const Overlay = ({
   gameStatus,
-  isPlayerTurn,
+  userId,
+  winnerId,
   onClickFindMatch,
   onClickStart,
 }: OverlayProps) => {
@@ -42,15 +43,16 @@ const Overlay = ({
     return (
       <div className={css.overlay}>
         <p className={css.statusResult}>
-          <b>
-            {isBreak ? "You win!" : `You ${isPlayerTurn ? "win" : "lose"}!`}
-          </b>
+          {!!winnerId && (
+            <b>{`You ${userId === winnerId ? 'win' : 'lose'}!`}</b>
+          )}
+          {isBreak && <b>You win!</b>}
         </p>
         <Button
           color="orange"
           onClick={noOpponent ? onClickFindMatch : onClickStart}
         >
-          {noOpponent ? "Find Match" : "Rematch"}
+          {noOpponent ? 'Find Match' : 'Rematch'}
         </Button>
       </div>
     );

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import Marks from "@/components/Marks";
+import Marks from '@/components/Marks';
 import {
   GAME_CLOSE,
   GAME_CREATE_ROOM,
@@ -15,25 +15,25 @@ import {
   STATUS_BREAK,
   STATUS_WAIT_JOIN,
   STATUS_WAIT_READY,
-} from "@/constants";
-import SocketProvider from "@/contexts/socket";
-import MainProvider from "@/contexts/main";
-import getTileType from "@/helpers/getTileType";
-import JsonParse from "@/helpers/JsonParse";
-import WebsocketClient from "@/helpers/websocketClient";
+} from '@/constants';
+import SocketProvider from '@/contexts/socket';
+import MainProvider from '@/contexts/main';
+import getTileType from '@/helpers/getTileType';
+import JsonParse from '@/helpers/JsonParse';
+import WebsocketClient from '@/helpers/websocketClient';
 import {
   handleSendToWSParams,
   GetWSMessageParams,
   RoomData,
   TileData,
   TTTWebSocket,
-} from "@/types";
+} from '@/types';
 
-import Game from "../Game";
-import Home from "../Home";
-import * as css from "./View.styles";
-import { RoomReadyValue, RoomWinValue } from "./View.types";
-import checkEnv from "@/helpers/checkEnv";
+import Game from '../Game';
+import Home from '../Home';
+import * as css from './View.styles';
+import { RoomReadyValue, RoomWinValue, type RoomWaitValue } from './View.types';
+import checkEnv from '@/helpers/checkEnv';
 
 const App = () => {
   const wsClient = useRef<TTTWebSocket | null>(null);
@@ -47,7 +47,8 @@ const App = () => {
   const [mark, setMark] = useState(0);
   const [historyList, setHistoryList] = useState<TileData[]>([]);
   const [line, setLine] = useState<TileData[]>([]);
-  const [statusText, setStatusText] = useState("");
+  const [statusText, setStatusText] = useState('');
+  const [winner, setWinner] = useState(0);
 
   const resetGame = () => {
     if (setHistoryList.length) {
@@ -55,11 +56,13 @@ const App = () => {
       setTurn(0);
       setHistoryList([]);
       setLine([]);
+      setWinner(0);
     }
   };
 
   const handleGetMessage = useCallback(
     ({ type, room, roomStatus, user, value }: GetWSMessageParams) => {
+      console.log(value);
       switch (type) {
         case GAME_INIT:
           userId.current = user;
@@ -72,18 +75,18 @@ const App = () => {
 
             resetGame();
 
-            setStatusText("Waiting for opponent to join...");
+            setStatusText('Waiting for opponent to join...');
             setGameStatus(STATUS_WAIT_JOIN);
           }
           break;
         case GAME_JOIN_ROOM:
           if (user === userId.current) {
             roomId.current = room;
-            setStatusText("The opponent has been waiting for you");
+            setStatusText('The opponent has been waiting for you');
           }
           if (room === roomId.current) {
             if (user !== userId.current) {
-              setStatusText("The opponent has joined the room");
+              setStatusText('The opponent has joined the room');
             }
             setGameStatus(STATUS_ALL_JOIN);
           }
@@ -91,11 +94,14 @@ const App = () => {
         case GAME_READY:
           if (roomStatus === STATUS_WAIT_READY) {
             if (room === roomId.current) {
+              const { winnerId } = JsonParse<RoomWaitValue>(value);
               if (user === userId.current) {
-                setStatusText("Waiting for opponent to be ready");
+                setStatusText('Waiting for opponent to be ready');
                 setGameStatus(roomStatus);
+              } else if (winnerId) {
+                setStatusText('The opponent wants a rematch!');
               } else {
-                setStatusText("The opponent is ready! Hit that button!");
+                setStatusText('The opponent is ready! Hit that button!');
               }
 
               resetGame();
@@ -120,7 +126,7 @@ const App = () => {
               const yourTurn =
                 getTileType(firstTurn) === getTileType(playerMark);
               setStatusText(
-                `${yourTurn ? "You go" : "Hold on! the opponent goes"} first.`
+                `${yourTurn ? 'You go' : 'Hold on! the opponent goes'} first.`
               );
               setGameStatus(roomStatus);
             }
@@ -129,7 +135,7 @@ const App = () => {
         case GAME_MARKING:
           if (room === roomId.current) {
             const parsedData = JsonParse<TileData>(value);
-            setStatusText("");
+            setStatusText('');
             setHistoryList((prev) => [parsedData, ...prev]);
           }
           break;
@@ -138,15 +144,16 @@ const App = () => {
           break;
         case GAME_WIN:
           if (room === roomId.current) {
-            const { resultLine } = JsonParse<RoomWinValue>(value);
+            const { resultLine, winnerId } = JsonParse<RoomWinValue>(value);
             setGameStatus(roomStatus);
             setLine(resultLine);
+            setWinner(winnerId);
           }
           break;
         case GAME_CLOSE:
           if (room === roomId.current) {
-            let text = "room";
-            if (roomStatus === STATUS_BREAK) text = "match";
+            let text = 'room';
+            if (roomStatus === STATUS_BREAK) text = 'match';
             setStatusText(`The Opponent has left the ${text}`);
             setGameStatus(roomStatus);
           }
@@ -164,7 +171,7 @@ const App = () => {
   const handleSendToWS = useCallback(
     ({ type, value }: handleSendToWSParams) => {
       if (wsClient.current && userId.current) {
-        const stringValue = value ? JSON.stringify(value) : "{}";
+        const stringValue = value ? JSON.stringify(value) : '{}';
         wsClient.current.sendMessage({
           type: type,
           user: userId.current,
@@ -185,18 +192,18 @@ const App = () => {
       if (!checkEnv()) return;
       wsClient.current = new WebsocketClient({
         url: import.meta.env.VITE_WS_URL,
-        onOpen: () => console.log("open"),
-        onClose: () => console.log("close"),
+        onOpen: () => console.log('open'),
+        onClose: () => console.log('close'),
         onGetMessage: handleGetMessage,
       });
     }
   }, [handleGetMessage]);
 
   useEffect(() => {
-    window.addEventListener("beforeunload", handleCloseWS);
+    window.addEventListener('beforeunload', handleCloseWS);
 
     return () => {
-      window.removeEventListener("beforeunload", handleCloseWS);
+      window.removeEventListener('beforeunload', handleCloseWS);
     };
   }, [handleCloseWS]);
 
@@ -217,6 +224,7 @@ const App = () => {
         statusText={statusText}
         turn={turn}
         userId={userId.current}
+        winner={winner}
       >
         <SocketProvider onSendToWS={handleSendToWS}>
           {roomId.current ? <Game /> : <Home rooms={roomList} />}

@@ -1,6 +1,6 @@
-import Marks from "@/components/Marks";
-import Template from "@/components/Template";
-import Tile from "@/components/Tile";
+import Marks from '@/components/Marks';
+import Template from '@/components/Template';
+import Tile from '@/components/Tile';
 import {
   GAME_MARKING,
   GAME_NEXT_TURN,
@@ -8,21 +8,21 @@ import {
   GAME_REMATCH,
   GAME_WIN,
   STATUS_FINISH,
-} from "@/constants";
-import { useMainContext } from "@/contexts/main/index.hook";
-import { useSocketContext } from "@/contexts/socket/index.hook";
-import getTileType from "@/helpers/getTileType";
-import { TileCoordinate } from "@/types";
+} from '@/constants';
+import { useMainContext } from '@/contexts/main/index.hook';
+import { useSocketContext } from '@/contexts/socket/index.hook';
+import getTileType from '@/helpers/getTileType';
+import { TileCoordinate } from '@/types';
 
-import History from "./components/History";
-import Overlay from "./components/Overlay";
-import { checkLine } from "./View.helpers";
-import { MAX_ALL_MARK, SHOW_OVERLAY, TILES } from "./View.constants";
-import * as css from "./View.styles";
+import History from './components/History';
+import Overlay from './components/Overlay';
+import { checkLine } from './View.helpers';
+import { MAX_ALL_MARK, SHOW_OVERLAY, TILES } from './View.constants';
+import * as css from './View.styles';
 
 const Game = () => {
   const { handleSendToWS } = useSocketContext();
-  const { gameStatus, historyList, line, mark, turn, roomId } =
+  const { gameStatus, historyList, line, mark, turn, roomId, userId, winner } =
     useMainContext();
 
   const isBegin = Boolean(turn);
@@ -31,7 +31,7 @@ const Game = () => {
   const isPlayerTurn = currentTurn === getTileType(mark);
 
   const showedHistory =
-    historyList.length > MAX_ALL_MARK
+    historyList.length > MAX_ALL_MARK && !winner
       ? historyList.slice(0, MAX_ALL_MARK)
       : historyList;
 
@@ -54,13 +54,16 @@ const Game = () => {
       });
 
       if (resultLine.length) {
-        handleSendToWS({ type: GAME_WIN, value: { roomId, resultLine } });
+        handleSendToWS({
+          type: GAME_WIN,
+          value: { roomId, resultLine, winnerId: userId },
+        });
       } else handleSendToWS({ type: GAME_NEXT_TURN, value: { roomId } });
     }
   };
 
   const handleStart = () => {
-    handleSendToWS({ type: GAME_READY, value: { roomId } });
+    handleSendToWS({ type: GAME_READY, value: { roomId, winnerId: winner } });
   };
 
   const handleFindMatch = () => {
@@ -123,7 +126,8 @@ const Game = () => {
 
         {SHOW_OVERLAY.includes(gameStatus) && (
           <Overlay
-            isPlayerTurn={isPlayerTurn}
+            userId={userId}
+            winnerId={winner}
             gameStatus={gameStatus}
             onClickFindMatch={handleFindMatch}
             onClickStart={handleStart}

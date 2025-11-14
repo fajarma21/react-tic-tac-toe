@@ -1,7 +1,7 @@
-import { css, keyframes } from "@emotion/css";
+import { css, keyframes } from '@emotion/css';
 
-const glass = "#ababab";
-const sand = "#ffc18d";
+const glass = '#ababab';
+const sand = '#ffc18d';
 
 const timeBefore = keyframes`
   0%, 30% {
@@ -26,26 +26,33 @@ const timeBefore = keyframes`
 const timeAfter = keyframes`
   0% {
     transform: scale(1);
+    border-radius: 50%;
   }
   30% {
     transform: scale(0);
+    border-radius: 0;
   }
 
   49.9% {
     transform: scale(0);
+    border-radius: 0;
   }
   50% {
     transform: scale(1);
+    border-radius: 50%;
   }
   80% {
     transform: scale(0);
+    border-radius: 0;
   }
 
   99.9% {
     transform: scale(0);
+    border-radius: 0;
   }
   100% {
     transform: scale(1);
+    border-radius: 50%;
   }
 `;
 
@@ -72,7 +79,7 @@ export const hour = css`
 
   &::before,
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     display: block;
     box-sizing: border-box;
@@ -80,10 +87,10 @@ export const hour = css`
     width: 50px;
     border-style: solid;
     border-width: 25px 23px;
-    border-radius: 50%;
   }
 
   &::before {
+    border-radius: 50%;
     border-color: ${glass} transparent ${sand};
     animation: ${timeBefore} ease 5s infinite;
   }

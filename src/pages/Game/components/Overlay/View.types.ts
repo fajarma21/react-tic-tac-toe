@@ -1,6 +1,7 @@
 export interface OverlayProps {
   gameStatus: number;
-  isPlayerTurn: boolean;
+  userId: number;
+  winnerId: number;
   onClickFindMatch: () => void;
   onClickStart: () => void;
 }
